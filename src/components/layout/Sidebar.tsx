@@ -22,6 +22,22 @@ interface SidebarProps {
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const { user } = useAuth();
+  
+  // Проверяем наличие непрочитанных сообщений
+  const getUnreadMessagesCount = () => {
+    try {
+      const savedChats = localStorage.getItem('messenger_chats');
+      if (savedChats) {
+        const chats = JSON.parse(savedChats);
+        return chats.reduce((total: number, chat: any) => total + (chat.unreadCount || 0), 0);
+      }
+    } catch (error) {
+      console.error('Ошибка при подсчете непрочитанных сообщений:', error);
+    }
+    return 0;
+  };
+
+  const unreadCount = getUnreadMessagesCount();
 
   const getNavigationItems = () => {
     const baseItems = [
@@ -42,6 +58,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       { id: 'employees', label: 'Сотрудники', icon: Users },
       { id: 'salary', label: 'Зарплаты', icon: DollarSign },
       { id: 'calendar', label: 'Календарь', icon: Calendar },
+      { id: 'messenger', label: 'Мессенджер', icon: MessageCircle, badge: unreadCount },
       { id: 'script', label: 'Скрипт', icon: FileText },
     ];
 
@@ -90,6 +107,11 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   <span className="font-medium">{item.label}</span>
                 </button>
               </li>
+                  {item.badge && item.badge > 0 && (
+                    <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
             );
           })}
         </ul>

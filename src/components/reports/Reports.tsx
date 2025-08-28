@@ -215,35 +215,93 @@ function UploadReportModal({ isOpen, onClose, onUpload }: UploadReportModalProps
 
 export function Reports() {
   const { user } = useAuth();
-  const [reports, setReports] = useState<Report[]>([
-    {
-      id: '1',
-      title: 'Отчет по проекту "Свадебный альбом" за февраль',
-      description: 'Подробный отчет о выполненной работе по свадебному альбому',
-      fileName: 'wedding_report_feb.docx',
-      fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      fileSize: 245760,
-      uploadedBy: '2',
-      uploadedByName: 'Анна Иванова',
-      uploadedAt: new Date('2024-02-28'),
-      fileUrl: '#'
-    },
-    {
-      id: '2',
-      title: 'Отчет по выпускному альбому',
-      description: 'Промежуточный отчет о работе над выпускным альбомом',
-      fileName: 'graduation_report.txt',
-      fileType: 'text/plain',
-      fileSize: 12800,
-      uploadedBy: '3',
-      uploadedByName: 'Елена Сидорова',
-      uploadedAt: new Date('2024-02-25'),
-      fileUrl: '#'
-    }
-  ]);
+  const [reports, setReports] = useState<Report[]>([]);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
+
+  // Загружаем отчеты из localStorage при инициализации
+  React.useEffect(() => {
+    const savedReports = localStorage.getItem('reports');
+    if (savedReports) {
+      try {
+        const parsedReports = JSON.parse(savedReports);
+        const reportsWithDates = parsedReports.map((report: any) => ({
+          ...report,
+          uploadedAt: new Date(report.uploadedAt)
+        }));
+        setReports(reportsWithDates);
+      } catch (error) {
+        console.error('Ошибка при загрузке отчетов:', error);
+        // Устанавливаем тестовые данные если localStorage пуст
+        const defaultReports = [
+          {
+            id: '1',
+            title: 'Отчет по проекту "Свадебный альбом" за февраль',
+            description: 'Подробный отчет о выполненной работе по свадебному альбому',
+            fileName: 'wedding_report_feb.docx',
+            fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            fileSize: 245760,
+            uploadedBy: '2',
+            uploadedByName: 'Анна Иванова',
+            uploadedAt: new Date('2024-02-28'),
+            fileUrl: '#'
+          },
+          {
+            id: '2',
+            title: 'Отчет по выпускному альбому',
+            description: 'Промежуточный отчет о работе над выпускным альбомом',
+            fileName: 'graduation_report.txt',
+            fileType: 'text/plain',
+            fileSize: 12800,
+            uploadedBy: '3',
+            uploadedByName: 'Елена Сидорова',
+            uploadedAt: new Date('2024-02-25'),
+            fileUrl: '#'
+          }
+        ];
+        setReports(defaultReports);
+        localStorage.setItem('reports', JSON.stringify(defaultReports));
+      }
+    } else {
+      // Устанавливаем тестовые данные если localStorage пуст
+      const defaultReports = [
+        {
+          id: '1',
+          title: 'Отчет по проекту "Свадебный альбом" за февраль',
+          description: 'Подробный отчет о выполненной работе по свадебному альбому',
+          fileName: 'wedding_report_feb.docx',
+          fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          fileSize: 245760,
+          uploadedBy: '2',
+          uploadedByName: 'Анна Иванова',
+          uploadedAt: new Date('2024-02-28'),
+          fileUrl: '#'
+        },
+        {
+          id: '2',
+          title: 'Отчет по выпускному альбому',
+          description: 'Промежуточный отчет о работе над выпускным альбомом',
+          fileName: 'graduation_report.txt',
+          fileType: 'text/plain',
+          fileSize: 12800,
+          uploadedBy: '3',
+          uploadedByName: 'Елена Сидорова',
+          uploadedAt: new Date('2024-02-25'),
+          fileUrl: '#'
+        }
+      ];
+      setReports(defaultReports);
+      localStorage.setItem('reports', JSON.stringify(defaultReports));
+    }
+  }, []);
+
+  // Сохраняем отчеты в localStorage при изменении
+  React.useEffect(() => {
+    if (reports.length > 0) {
+      localStorage.setItem('reports', JSON.stringify(reports));
+    }
+  }, [reports]);
 
   const handleUploadReport = (report: Omit<Report, 'id' | 'uploadedAt'>) => {
     const newReport: Report = {
@@ -251,13 +309,21 @@ export function Reports() {
       id: Math.random().toString(36).substr(2, 9),
       uploadedAt: new Date()
     };
-    setReports(prev => [newReport, ...prev]);
+    setReports(prev => {
+      const updatedReports = [newReport, ...prev];
+      localStorage.setItem('reports', JSON.stringify(updatedReports));
+      return updatedReports;
+    });
   };
 
   const handleDeleteReport = (reportId: string) => {
     const report = reports.find(r => r.id === reportId);
     if (report && (user?.role === 'admin' || user?.id === report.uploadedBy)) {
-      setReports(prev => prev.filter(r => r.id !== reportId));
+      setReports(prev => {
+        const updatedReports = prev.filter(r => r.id !== reportId);
+        localStorage.setItem('reports', JSON.stringify(updatedReports));
+        return updatedReports;
+      });
       if (report.fileUrl && report.fileUrl.startsWith('blob:')) {
         URL.revokeObjectURL(report.fileUrl);
       }

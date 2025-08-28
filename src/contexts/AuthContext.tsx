@@ -163,8 +163,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
     
+    // Загружаем сохраненные проекты
+    const savedProjects = localStorage.getItem('projects');
+    if (savedProjects) {
+      try {
+        const parsedProjects = JSON.parse(savedProjects);
+        // Преобразуем строки дат обратно в объекты Date
+        const projectsWithDates = parsedProjects.map((project: any) => ({
+          ...project,
+          createdAt: new Date(project.createdAt),
+          updatedAt: new Date(project.updatedAt),
+          deadline: new Date(project.deadline),
+          files: project.files.map((file: any) => ({
+            ...file,
+            uploadedAt: new Date(file.uploadedAt)
+          }))
+        }));
+        setProjects(projectsWithDates);
+      } catch (error) {
+        console.error('Ошибка при загрузке проектов:', error);
+        localStorage.removeItem('projects');
+      }
+    }
+    
     setLoading(false);
   }, []);
+
+  // Сохраняем проекты в localStorage при изменении
+  useEffect(() => {
+    if (projects.length > 0) {
+      localStorage.setItem('projects', JSON.stringify(projects));
+    }
+  }, [projects]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -306,25 +336,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       designsCount: 0,
       files: []
     };
-    setProjects(prev => [...prev, newProject]);
+    setProjects(prev => {
+      const updatedProjects = [...prev, newProject];
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      return updatedProjects;
+    });
   };
 
   const updateProject = async (id: string, projectData: Partial<Project>): Promise<void> => {
-    setProjects(prev => prev.map(p => 
-      p.id === id 
-        ? { 
-            ...p, 
-            ...projectData, 
-            updatedAt: new Date(),
-            photosCount: projectData.files ? projectData.files.filter(f => f.type.startsWith('image/')).length : p.photosCount,
-            designsCount: projectData.files ? projectData.files.filter(f => f.type.includes('design') || f.name.toLowerCase().includes('макет') || f.name.toLowerCase().includes('design')).length : p.designsCount
-          }
-        : p
-    ));
+    setProjects(prev => {
+      const updatedProjects = prev.map(p => 
+        p.id === id 
+          ? { 
+              ...p, 
+              ...projectData, 
+              updatedAt: new Date(),
+              photosCount: projectData.files ? projectData.files.filter(f => f.type.startsWith('image/')).length : p.photosCount,
+              designsCount: projectData.files ? projectData.files.filter(f => f.type.includes('design') || f.name.toLowerCase().includes('макет') || f.name.toLowerCase().includes('design')).length : p.designsCount
+            }
+          : p
+      );
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      return updatedProjects;
+    });
   };
 
   const deleteProject = async (id: string): Promise<void> => {
-    setProjects(prev => prev.filter(p => p.id !== id));
+    setProjects(prev => {
+      const updatedProjects = prev.filter(p => p.id !== id);
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      return updatedProjects;
+    });
   };
 
   const addFileToProject = async (projectId: string, fileData: Omit<ProjectFile, 'id' | 'uploadedAt'>): Promise<void> => {
@@ -334,35 +376,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       uploadedAt: new Date()
     };
 
-    setProjects(prev => prev.map(p => {
-      if (p.id === projectId) {
-        const updatedFiles = [...p.files, newFile];
-        return {
-          ...p,
-          files: updatedFiles,
-          photosCount: updatedFiles.filter(f => f.type.startsWith('image/')).length,
-          designsCount: updatedFiles.filter(f => f.type.includes('design') || f.name.toLowerCase().includes('макет') || f.name.toLowerCase().includes('design')).length,
-          updatedAt: new Date()
-        };
-      }
-      return p;
-    }));
+    setProjects(prev => {
+      const updatedProjects = prev.map(p => {
+        if (p.id === projectId) {
+          const updatedFiles = [...p.files, newFile];
+          return {
+            ...p,
+            files: updatedFiles,
+            photosCount: updatedFiles.filter(f => f.type.startsWith('image/')).length,
+            designsCount: updatedFiles.filter(f => f.type.includes('design') || f.name.toLowerCase().includes('макет') || f.name.toLowerCase().includes('design')).length,
+            updatedAt: new Date()
+          };
+        }
+        return p;
+      });
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      return updatedProjects;
+    });
   };
 
   const removeFileFromProject = async (projectId: string, fileId: string): Promise<void> => {
-    setProjects(prev => prev.map(p => {
-      if (p.id === projectId) {
-        const updatedFiles = p.files.filter(f => f.id !== fileId);
-        return {
-          ...p,
-          files: updatedFiles,
-          photosCount: updatedFiles.filter(f => f.type.startsWith('image/')).length,
-          designsCount: updatedFiles.filter(f => f.type.includes('design') || f.name.toLowerCase().includes('макет') || f.name.toLowerCase().includes('design')).length,
-          updatedAt: new Date()
-        };
-      }
-      return p;
-    }));
+    setProjects(prev => {
+      const updatedProjects = prev.map(p => {
+        if (p.id === projectId) {
+          const updatedFiles = p.files.filter(f => f.id !== fileId);
+          return {
+            ...p,
+            files: updatedFiles,
+            photosCount: updatedFiles.filter(f => f.type.startsWith('image/')).length,
+            designsCount: updatedFiles.filter(f => f.type.includes('design') || f.name.toLowerCase().includes('макет') || f.name.toLowerCase().includes('design')).length,
+            updatedAt: new Date()
+          };
+        }
+        return p;
+      });
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      return updatedProjects;
+    });
   };
 
   const value: AuthContextType = {

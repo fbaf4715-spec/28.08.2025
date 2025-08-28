@@ -13,7 +13,7 @@ import { Calendar } from './components/calendar/Calendar';
 import { Script } from './components/script/Script';
 import { Reports } from './components/reports/Reports';
 import { ProjectDetail } from './components/projects/ProjectDetail';
-import { MiniMessenger } from './components/messenger/MiniMessenger';
+import { Messenger } from './components/messenger/Messenger';
 
 function AppContent() {
   const { isAuthenticated, loading } = useAuth();
@@ -67,6 +67,8 @@ function AppContent() {
         return <SalaryManagement />;
       case 'calendar':
         return <Calendar />;
+      case 'messenger':
+        return <Messenger />;
       case 'script':
         return <Script />;
       default:
@@ -82,7 +84,6 @@ function AppContent() {
         <main className="flex-1 overflow-auto">
           {renderContent()}
         </main>
-        <MiniMessenger />
       </div>
     </div>
   );
