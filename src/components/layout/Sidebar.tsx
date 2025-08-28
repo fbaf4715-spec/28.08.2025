@@ -96,7 +96,6 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                     activeTab === item.id
                       ? 'bg-blue-50 text-blue-700 border-blue-200'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                    // Only disable add-employee for non-admin users
                     (user?.role !== 'admin' && item.id === 'add-employee')
                       ? 'opacity-50 cursor-not-allowed'
                       : ''
@@ -105,13 +104,13 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 >
                   <Icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
-                </button>
-              </li>
                   {item.badge && item.badge > 0 && (
                     <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
                       {item.badge > 99 ? '99+' : item.badge}
                     </span>
                   )}
+                </button>
+              </li>
             );
           })}
         </ul>
