@@ -19,6 +19,28 @@ function AppContent() {
   const { isAuthenticated, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [messengerTargetUser, setMessengerTargetUser] = useState<string | null>(null);
+
+  // Слушаем события для открытия чата в мессенджере
+  useEffect(() => {
+    const handleOpenMessengerChat = (event: CustomEvent) => {
+      setMessengerTargetUser(event.detail.userId);
+      setActiveTab('messenger');
+    };
+
+    window.addEventListener('openMessengerChat', handleOpenMessengerChat as EventListener);
+    
+    // Проверяем localStorage на наличие запроса открыть чат
+    const targetUserId = localStorage.getItem('messenger_open_chat');
+    if (targetUserId) {
+      setMessengerTargetUser(targetUserId);
+      localStorage.removeItem('messenger_open_chat');
+    }
+
+    return () => {
+      window.removeEventListener('openMessengerChat', handleOpenMessengerChat as EventListener);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -68,7 +90,7 @@ function AppContent() {
       case 'calendar':
         return <Calendar />;
       case 'messenger':
-        return <Messenger />;
+        return <Messenger targetUserId={messengerTargetUser} onClearTarget={() => setMessengerTargetUser(null)} />;
       case 'script':
         return <Script />;
       default:

@@ -442,7 +442,7 @@ export function EmployeesList() {
                     </div>
                     <div className="mt-4 flex space-x-2">
                       <Button size="sm" variant="outline" onClick={() => handleContact(employee)}>
-                        <MessageCircle className="h-4 w-4 mr-1" />Связаться
+                        <Phone className="h-4 w-4 mr-1" />Контакты
                       </Button>
                       {user?.role === 'admin' && (
                         <>
@@ -460,6 +460,21 @@ export function EmployeesList() {
                           </Button>
                         </>
                       )}
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          // Переходим в мессенджер и открываем чат с этим сотрудником
+                          localStorage.setItem('messenger_open_chat', employee.id);
+                          window.location.hash = '#messenger';
+                          // Имитируем клик по вкладке мессенджер
+                          const event = new CustomEvent('openMessengerChat', { detail: { userId: employee.id } });
+                          window.dispatchEvent(event);
+                        }}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        Написать в чате
+                      </Button>
                     </div>
                   </div>
                 </div>

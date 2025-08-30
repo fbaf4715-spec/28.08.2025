@@ -29,7 +29,11 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       const savedChats = localStorage.getItem('messenger_chats');
       if (savedChats) {
         const chats = JSON.parse(savedChats);
-        return chats.reduce((total: number, chat: any) => total + (chat.unreadCount || 0), 0);
+        return chats.reduce((total: number, chat: any) => {
+          // Считаем только непрочитанные сообщения для текущего пользователя
+          const userUnread = chat.unreadCount && chat.unreadCount[user?.id] ? chat.unreadCount[user.id] : 0;
+          return total + userUnread;
+        }, 0);
       }
     } catch (error) {
       console.error('Ошибка при подсчете непрочитанных сообщений:', error);

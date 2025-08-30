@@ -57,6 +57,30 @@ export function Calendar() {
   // Персональные события пользователя
   const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([]);
 
+  // Загружаем события из localStorage
+  useEffect(() => {
+    const savedEvents = localStorage.getItem('calendar_events');
+    if (savedEvents) {
+      try {
+        const parsedEvents = JSON.parse(savedEvents);
+        const eventsWithDates = parsedEvents.map((event: any) => ({
+          ...event,
+          // Не преобразуем дату, так как она уже в строковом формате
+        }));
+        setCustomEvents(eventsWithDates);
+      } catch (error) {
+        console.error('Ошибка при загрузке событий календаря:', error);
+      }
+    }
+  }, []);
+
+  // Сохраняем события в localStorage при изменении
+  useEffect(() => {
+    if (customEvents.length >= 0) {
+      localStorage.setItem('calendar_events', JSON.stringify(customEvents));
+    }
+  }, [customEvents]);
+
   // Объединяем пользовательские события и события дедлайнов проектов
   const events = [...customEvents, ...projectDeadlineEvents];
 
@@ -155,6 +179,9 @@ export function Calendar() {
     };
 
     setCustomEvents(prev => [...prev, event]);
+    // Сохраняем в localStorage
+    const updatedEvents = [...customEvents, event];
+    localStorage.setItem('calendar_events', JSON.stringify(updatedEvents));
     setNewEvent({ title: '', description: '', time: '09:00', type: 'other' });
     setShowEventModal(false);
   };
@@ -164,7 +191,11 @@ export function Calendar() {
     if (eventId.startsWith('project-')) {
       return;
     }
-    setCustomEvents(prev => prev.filter(event => event.id !== eventId));
+    setCustomEvents(prev => {
+      const updated = prev.filter(event => event.id !== eventId);
+      localStorage.setItem('calendar_events', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const days = getDaysInMonth(currentDate);

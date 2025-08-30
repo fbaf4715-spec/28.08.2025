@@ -259,12 +259,35 @@ export function SalaryManagement() {
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [salaryCalculations, setSalaryCalculations] = useState<SalaryCalculation[]>([]);
 
+  // Загружаем расчеты зарплат из localStorage
+  useEffect(() => {
+    const savedCalculations = localStorage.getItem('salary_calculations');
+    if (savedCalculations) {
+      try {
+        setSalaryCalculations(JSON.parse(savedCalculations));
+      } catch (error) {
+        console.error('Ошибка при загрузке расчетов зарплат:', error);
+      }
+    }
+  }, []);
+
+  // Сохраняем расчеты в localStorage при изменении
+  useEffect(() => {
+    if (salaryCalculations.length > 0) {
+      localStorage.setItem('salary_calculations', JSON.stringify(salaryCalculations));
+    }
+  }, [salaryCalculations]);
+
   const handleSaveCalculation = (calculation: Omit<SalaryCalculation, 'id'>) => {
     const newCalculation: SalaryCalculation = {
       ...calculation,
       id: Math.random().toString(36).substr(2, 9)
     };
-    setSalaryCalculations(prev => [...prev, newCalculation]);
+    setSalaryCalculations(prev => {
+      const updated = [...prev, newCalculation];
+      localStorage.setItem('salary_calculations', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const filteredCalculations = salaryCalculations.filter(calc => {
