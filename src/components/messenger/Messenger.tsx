@@ -193,7 +193,7 @@ export function Messenger({ targetUserId, onClearTarget }: MessengerProps) {
 
   // Сохраняем чаты в localStorage при изменении
   useEffect(() => {
-    if (chats.length >= 0) {
+    if (chats.length > 0) {
       localStorage.setItem('messenger_chats', JSON.stringify(chats));
     }
   }, [chats]);
@@ -241,11 +241,7 @@ export function Messenger({ targetUserId, onClearTarget }: MessengerProps) {
       createdAt: new Date()
     };
 
-    setChats(prev => {
-      const updatedChats = [...prev, newChat];
-      localStorage.setItem('messenger_chats', JSON.stringify(updatedChats));
-      return updatedChats;
-    });
+    setChats(prev => [...prev, newChat]);
 
     return newChat.id;
   };
@@ -293,7 +289,6 @@ export function Messenger({ targetUserId, onClearTarget }: MessengerProps) {
         }
         return chat;
       });
-      localStorage.setItem('messenger_chats', JSON.stringify(updatedChats));
       return updatedChats;
     });
 
@@ -325,7 +320,6 @@ export function Messenger({ targetUserId, onClearTarget }: MessengerProps) {
         }
         return chat;
       });
-      localStorage.setItem('messenger_chats', JSON.stringify(updatedChats));
       return updatedChats;
     });
   };
