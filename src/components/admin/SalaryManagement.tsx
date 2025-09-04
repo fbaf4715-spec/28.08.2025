@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DollarSign, Search, Filter, Calendar, MessageCircle, Phone, Mail, X, Calculator, FileText, Plus, Eye } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
